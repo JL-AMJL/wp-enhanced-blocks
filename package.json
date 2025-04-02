@@ -1,0 +1,18 @@
+{
+  "name": "custom-block-enhancer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "wp-scripts build block-supports/position-control.js",
+    "start": "wp-scripts start block-supports/position-control.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@wordpress/components": "^29.7.0",
+    "@wordpress/scripts": "^30.14.1"
+  }
+}
