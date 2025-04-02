@@ -1,40 +1,31 @@
-import { BoxControl } from '@wordpress/components/build-module';
 import { addFilter } from '@wordpress/hooks';
 import {
 	PanelBody,
 	SelectControl,
-  TextControl,
+  	TextControl,
 } from '@wordpress/components';
+import { BoxControl } from '@wordpress/components/build-module';
 import { InspectorControls } from '@wordpress/block-editor';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { Fragment } from '@wordpress/element';
 
 console.log('BoxControl:', BoxControl);
 
-const allowedBlocks = ['core/group'];
+const POSITION_SUPPORT_BLOCKS = ['core/group', 'core/cover', 'core/column'];
 
 const withCustomPositionControls = createHigherOrderComponent((BlockEdit) => (props) => {
-	if (!allowedBlocks.includes(props.name)) return <BlockEdit {...props} />;
+	if (!POSITION_SUPPORT_BLOCKS.includes(props.name)) return <BlockEdit {...props} />;
 
 	const { attributes, setAttributes } = props;
-	const {
-		cbePosition, cbeZIndex, cbeTop, cbeLeft, cbeRight, cbeBottom,
-	} = attributes;
-
-  const positionValues = {
-    top: typeof cbeTop === 'string' ? cbeTop : '',
-    right: typeof cbeRight === 'string' ? cbeRight : '',
-    bottom: typeof cbeBottom === 'string' ? cbeBottom : '',
-    left: typeof cbeLeft === 'string' ? cbeLeft : '',
-  };
+	const { cbePosition, cbeOffset, cbeZIndex } = attributes;
 
 	return (
 		<Fragment>
 			<BlockEdit {...props} />
 			<InspectorControls>
-				<PanelBody title="Positionierung" initialOpen={false}>
+				<PanelBody title="Advanced Positioning" initialOpen={false}>
 					<SelectControl
-						label="Position"
+						label="CSS-Position"
 						value={cbePosition}
 						options={[
 							{ label: 'Standard', value: '' },
@@ -47,18 +38,13 @@ const withCustomPositionControls = createHigherOrderComponent((BlockEdit) => (pr
 					/>
 					<TextControl label="Z-Index" value={cbeZIndex} onChange={(v) => setAttributes({ cbeZIndex: v })} />
 					<BoxControl
-            label="Offset"
-            values={positionValues}
-            onChange={(newValues) => {
-              setAttributes({
-                cbeTop: newValues.top ?? '',
-                cbeRight: newValues.right ?? '',
-                cbeBottom: newValues.bottom ?? '',
-                cbeLeft: newValues.left ?? '',
-              });
-            }}
-            units={ [ 'px', '%', 'em', 'rem', 'vh', 'vw' ] }
-          />
+						label="Offset"
+						values={ attributes.cbeOffset || {} }
+						onChange={(newValues) => {
+							setAttributes({ cbeOffset: newValues });
+						}}
+						units={ [ 'px', '%', 'em', 'rem', 'vh', 'vw' ] }
+					/>
 				</PanelBody>
 			</InspectorControls>
 		</Fragment>
@@ -68,38 +54,41 @@ const withCustomPositionControls = createHigherOrderComponent((BlockEdit) => (pr
 addFilter('editor.BlockEdit', 'cbe/custom-position-controls', withCustomPositionControls);
 
 function addCustomAttributes(settings, name) {
-	if (!allowedBlocks.includes(name)) return settings;
+	if (!POSITION_SUPPORT_BLOCKS.includes(name)) return settings;
 
 	return {
 		...settings,
 		attributes: {
 			...settings.attributes,
-			cbePosition: { type: 'string', default: '' },
-			cbeZIndex: { type: 'string', default: '' },
-			cbeTop: { type: 'string', default: '' },
-			cbeLeft: { type: 'string', default: '' },
-			cbeRight: { type: 'string', default: '' },
-			cbeBottom: { type: 'string', default: '' },
+			cbePosition: { type: 'string' },
+			cbeOffset: {
+				type: 'object',
+				default: {
+					top: null,
+					right: null,
+					bottom: null,
+					left: null,
+				},
+			},
+			cbeZIndex: { type: 'string' },
 		},
 	};
 }
 addFilter('blocks.registerBlockType', 'cbe/add-custom-attributes', addCustomAttributes);
 
 function applyCustomStyles(extraProps, blockType, attributes) {
-	if (!allowedBlocks.includes(blockType.name)) return extraProps;
+	if (!POSITION_SUPPORT_BLOCKS.includes(blockType.name)) return extraProps;
 
-	const {
-		cbePosition, cbeZIndex, cbeTop, cbeLeft, cbeRight, cbeBottom,
-	} = attributes;
+	const { cbePosition, cbeOffset, cbeZIndex	} = attributes;
 
 	extraProps.style = {
 		...extraProps.style,
-		position: cbePosition || undefined,
-		zIndex: cbeZIndex || undefined,
-		top: cbeTop || undefined,
-		left: cbeLeft || undefined,
-		right: cbeRight || undefined,
-		bottom: cbeBottom || undefined,
+		...( cbePosition && {position: cbePosition} ),
+		...( cbeOffset?.top && {top: cbeOffset.top} ),
+		...( cbeOffset?.right && {right: cbeOffset.right} ),
+		...( cbeOffset?.bottom && {bottom: cbeOffset.bottom} ),
+		...( cbeOffset?.left && {left: cbeOffset.left} ),
+		...( cbeZIndex && !isNaN( parseInt(cbeZIndex) ) ? {zIndex: parseInt(cbeZIndex)} : {} ),
 	};
 
 	return extraProps;
