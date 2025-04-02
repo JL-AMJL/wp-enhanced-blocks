@@ -13,6 +13,14 @@ function cbe_enqueue_block_editor_assets() {
         filemtime(plugin_dir_path(__FILE__) . 'build/position-control.js'),
         true
     );
+    
+    wp_enqueue_style(
+        'wp-enhanced-blocks-editor-style',
+        plugins_url( 'editor.css', __FILE__ ),
+        array(),
+        filemtime( plugin_dir_path( __FILE__ ) . 'editor.css' )
+    );
+    
 }
 add_action('enqueue_block_editor_assets', 'cbe_enqueue_block_editor_assets');
 

@@ -4,12 +4,10 @@ import {
 	SelectControl,
   	TextControl,
 } from '@wordpress/components';
-import { BoxControl } from '@wordpress/components/build-module';
+import { __experimentalBoxControl as BoxControl } from '@wordpress/components';
 import { InspectorControls } from '@wordpress/block-editor';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { Fragment } from '@wordpress/element';
-
-console.log('BoxControl:', BoxControl);
 
 const POSITION_SUPPORT_BLOCKS = ['core/group', 'core/cover', 'core/column'];
 
@@ -94,3 +92,31 @@ function applyCustomStyles(extraProps, blockType, attributes) {
 	return extraProps;
 }
 addFilter('blocks.getSaveContent.extraProps', 'cbe/apply-custom-styles', applyCustomStyles);
+
+addFilter(
+	'editor.BlockListBlock',
+	'cbe/editor-inline-style',
+	(BlockListBlock) => (props) => {
+		console.log('BlockListBlock Filter aktiv')
+		if (!['core/group', 'core/cover', 'core/column'].includes(props.name)) {
+			return <BlockListBlock {...props} />;
+		}
+
+		const { attributes } = props;
+
+		const wrapperProps = {
+			...props.wrapperProps,
+			style: {
+				...props.wrapperProps?.style,
+				'--cbe-position': attributes.cbePosition || undefined,
+				'--cbe-top': attributes.cbeOffset?.top || undefined,
+				'--cbe-right': attributes.cbeOffset?.right || undefined,
+				'--cbe-bottom': attributes.cbeOffset?.bottom || undefined,
+				'--cbe-left': attributes.cbeOffset?.left || undefined,
+				'--cbe-z-index': !isNaN(parseInt(attributes.cbeZIndex)) ? parseInt(attributes.cbeZIndex) : undefined,
+			},
+		};
+
+		return <BlockListBlock {...props} wrapperProps={wrapperProps} />;
+	}
+);
