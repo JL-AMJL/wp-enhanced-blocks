@@ -3,8 +3,11 @@ import {
 	PanelBody,
 	SelectControl,
   	TextControl,
+	ToggleControl,
+	__experimentalToolsPanel as ToolsPanel,
+	__experimentalToolsPanelItem as ToolsPanelItem,
+	__experimentalBoxControl as BoxControl,
 } from '@wordpress/components';
-import { __experimentalBoxControl as BoxControl } from '@wordpress/components';
 import { InspectorControls } from '@wordpress/block-editor';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { Fragment } from '@wordpress/element';
@@ -15,13 +18,20 @@ const withCustomPositionControls = createHigherOrderComponent((BlockEdit) => (pr
 	if (!POSITION_SUPPORT_BLOCKS.includes(props.name)) return <BlockEdit {...props} />;
 
 	const { attributes, setAttributes } = props;
-	const { cbePosition, cbeOffset, cbeZIndex } = attributes;
+	const { cbePosition, cbeOffset, cbeZIndex, cbeWidth100 } = attributes;
+
+	console.log('ATTRIBUTES', attributes);
 
 	return (
 		<Fragment>
 			<BlockEdit {...props} />
 			<InspectorControls>
 				<PanelBody title="Advanced Positioning" initialOpen={false}>
+					<ToggleControl
+						label="Breite auf 100% setzen"
+						checked={ attributes.cbeWidth100 }
+						onChange={ (value) => setAttributes({ cbeWidth100: value }) }
+					/>
 					<SelectControl
 						label="CSS-Position"
 						value={cbePosition}
@@ -69,10 +79,32 @@ function addCustomAttributes(settings, name) {
 				},
 			},
 			cbeZIndex: { type: 'string' },
+			cbeWidth100: { type: 'boolean', default: false },
+		},
+		supports: {
+			...settings.supports,
+			className: true,
 		},
 	};
 }
 addFilter('blocks.registerBlockType', 'cbe/add-custom-attributes', addCustomAttributes);
+
+function applyCustomClassNames(extraProps, blockType, attributes) {
+	if (!POSITION_SUPPORT_BLOCKS.includes(blockType.name)) return extraProps;
+
+	if (attributes.cbeWidth100) {
+		extraProps.className = `${extraProps.className || ''} cbe-width-100`.trim();
+	}
+
+	if (attributes.cbePosition) {
+		extraProps.className = `${extraProps.className || ''} cbe-position-${attributes.cbePosition}`.trim();
+	}
+
+	return extraProps;
+}
+addFilter('blocks.getSaveContent.extraProps', 'cbe/apply-classnames', applyCustomClassNames);
+
+
 
 function applyCustomStyles(extraProps, blockType, attributes) {
 	if (!POSITION_SUPPORT_BLOCKS.includes(blockType.name)) return extraProps;
@@ -97,7 +129,6 @@ addFilter(
 	'editor.BlockListBlock',
 	'cbe/editor-inline-style',
 	(BlockListBlock) => (props) => {
-		console.log('BlockListBlock Filter aktiv')
 		if (!['core/group', 'core/cover', 'core/column'].includes(props.name)) {
 			return <BlockListBlock {...props} />;
 		}
@@ -118,5 +149,26 @@ addFilter(
 		};
 
 		return <BlockListBlock {...props} wrapperProps={wrapperProps} />;
+	}
+);
+
+addFilter(
+	'blocks.getBlockAttributes',
+	'cbe/apply-classnames-to-edit',
+	(attributes, blockType) => {
+		if (!POSITION_SUPPORT_BLOCKS.includes(blockType.name)) return attributes;
+
+		let className = attributes.className || '';
+
+		if (attributes.cbeWidth100 && !className.includes('cbe-width-100')) {
+			className += ' cbe-width-100';
+		}
+
+		// Position behandeln wir später, daher hier nicht einfügen
+
+		return {
+			...attributes,
+			className: className.trim(),
+		};
 	}
 );
