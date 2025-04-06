@@ -20,8 +20,6 @@ const withCustomPositionControls = createHigherOrderComponent((BlockEdit) => (pr
 	const { attributes, setAttributes } = props;
 	const { cbePosition, cbeOffset, cbeZIndex, cbeWidth100 } = attributes;
 
-	console.log('ATTRIBUTES', attributes);
-
 	return (
 		<Fragment>
 			<BlockEdit {...props} />
@@ -92,19 +90,23 @@ addFilter('blocks.registerBlockType', 'cbe/add-custom-attributes', addCustomAttr
 function applyCustomClassNames(extraProps, blockType, attributes) {
 	if (!POSITION_SUPPORT_BLOCKS.includes(blockType.name)) return extraProps;
 
+	const classNames = [];
+
 	if (attributes.cbeWidth100) {
-		extraProps.className = `${extraProps.className || ''} cbe-width-100`.trim();
+		classNames.push('cbe-width-100');
 	}
 
 	if (attributes.cbePosition) {
-		extraProps.className = `${extraProps.className || ''} cbe-position-${attributes.cbePosition}`.trim();
+		classNames.push(`cbe-position-${attributes.cbePosition}`);
+	}
+
+	if (classNames.length > 0) {
+		extraProps.className = [extraProps.className || '', ...classNames].filter(Boolean).join(' ');
 	}
 
 	return extraProps;
 }
 addFilter('blocks.getSaveContent.extraProps', 'cbe/apply-classnames', applyCustomClassNames);
-
-
 
 function applyCustomStyles(extraProps, blockType, attributes) {
 	if (!POSITION_SUPPORT_BLOCKS.includes(blockType.name)) return extraProps;
@@ -113,7 +115,6 @@ function applyCustomStyles(extraProps, blockType, attributes) {
 
 	extraProps.style = {
 		...extraProps.style,
-		...( cbePosition && {position: cbePosition} ),
 		...( cbeOffset?.top && {top: cbeOffset.top} ),
 		...( cbeOffset?.right && {right: cbeOffset.right} ),
 		...( cbeOffset?.bottom && {bottom: cbeOffset.bottom} ),
@@ -146,6 +147,11 @@ addFilter(
 				'--cbe-left': attributes.cbeOffset?.left || undefined,
 				'--cbe-z-index': !isNaN(parseInt(attributes.cbeZIndex)) ? parseInt(attributes.cbeZIndex) : undefined,
 			},
+			className: [
+				props.wrapperProps?.className,
+				attributes.cbeWidth100 ? 'cbe-width-100' : null,
+				attributes.cbePosition ? `cbe-position-${attributes.cbePosition}` : null,
+			].filter(Boolean).join(' ')
 		};
 
 		return <BlockListBlock {...props} wrapperProps={wrapperProps} />;
@@ -158,17 +164,19 @@ addFilter(
 	(attributes, blockType) => {
 		if (!POSITION_SUPPORT_BLOCKS.includes(blockType.name)) return attributes;
 
-		let className = attributes.className || '';
+		const classNames = [attributes.className || ''];
 
-		if (attributes.cbeWidth100 && !className.includes('cbe-width-100')) {
-			className += ' cbe-width-100';
+		if (attributes.cbeWidth100) {
+			classNames.push('cbe-width-100');
 		}
 
-		// Position behandeln wir später, daher hier nicht einfügen
+		if (attributes.cbePosition) {
+			classNames.push(`cbe-position-${attributes.cbePosition}`);
+		}
 
 		return {
 			...attributes,
-			className: className.trim(),
+			className: classNames.join(' ').trim(),
 		};
 	}
 );

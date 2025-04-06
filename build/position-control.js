@@ -170,7 +170,6 @@ const withCustomPositionControls = (0,_wordpress_compose__WEBPACK_IMPORTED_MODUL
     cbeZIndex,
     cbeWidth100
   } = attributes;
-  console.log('ATTRIBUTES', attributes);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(BlockEdit, {
       ...props
@@ -262,11 +261,15 @@ function addCustomAttributes(settings, name) {
 (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_0__.addFilter)('blocks.registerBlockType', 'cbe/add-custom-attributes', addCustomAttributes);
 function applyCustomClassNames(extraProps, blockType, attributes) {
   if (!POSITION_SUPPORT_BLOCKS.includes(blockType.name)) return extraProps;
+  const classNames = [];
   if (attributes.cbeWidth100) {
-    extraProps.className = `${extraProps.className || ''} cbe-width-100`.trim();
+    classNames.push('cbe-width-100');
   }
   if (attributes.cbePosition) {
-    extraProps.className = `${extraProps.className || ''} cbe-position-${attributes.cbePosition}`.trim();
+    classNames.push(`cbe-position-${attributes.cbePosition}`);
+  }
+  if (classNames.length > 0) {
+    extraProps.className = [extraProps.className || '', ...classNames].filter(Boolean).join(' ');
   }
   return extraProps;
 }
@@ -280,9 +283,6 @@ function applyCustomStyles(extraProps, blockType, attributes) {
   } = attributes;
   extraProps.style = {
     ...extraProps.style,
-    ...(cbePosition && {
-      position: cbePosition
-    }),
     ...(cbeOffset?.top && {
       top: cbeOffset.top
     }),
@@ -321,7 +321,8 @@ function applyCustomStyles(extraProps, blockType, attributes) {
       '--cbe-bottom': attributes.cbeOffset?.bottom || undefined,
       '--cbe-left': attributes.cbeOffset?.left || undefined,
       '--cbe-z-index': !isNaN(parseInt(attributes.cbeZIndex)) ? parseInt(attributes.cbeZIndex) : undefined
-    }
+    },
+    className: [props.wrapperProps?.className, attributes.cbeWidth100 ? 'cbe-width-100' : null, attributes.cbePosition ? `cbe-position-${attributes.cbePosition}` : null].filter(Boolean).join(' ')
   };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(BlockListBlock, {
     ...props,
@@ -330,16 +331,16 @@ function applyCustomStyles(extraProps, blockType, attributes) {
 });
 (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_0__.addFilter)('blocks.getBlockAttributes', 'cbe/apply-classnames-to-edit', (attributes, blockType) => {
   if (!POSITION_SUPPORT_BLOCKS.includes(blockType.name)) return attributes;
-  let className = attributes.className || '';
-  if (attributes.cbeWidth100 && !className.includes('cbe-width-100')) {
-    className += ' cbe-width-100';
+  const classNames = [attributes.className || ''];
+  if (attributes.cbeWidth100) {
+    classNames.push('cbe-width-100');
   }
-
-  // Position behandeln wir später, daher hier nicht einfügen
-
+  if (attributes.cbePosition) {
+    classNames.push(`cbe-position-${attributes.cbePosition}`);
+  }
   return {
     ...attributes,
-    className: className.trim()
+    className: classNames.join(' ').trim()
   };
 });
 })();

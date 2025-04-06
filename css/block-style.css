@@ -5,3 +5,19 @@
 .cbe-width-100 {
   width: 100% !important;
 }
+
+.cbe-position-relative {
+	position: relative !important;
+}
+.cbe-position-absolute {
+	position: absolute !important;
+	top: 0;
+}
+.cbe-position-fixed {
+	position: fixed !important;
+	top: 0;
+}
+.cbe-position-sticky {
+	position: sticky !important;
+	top: 0;
+}
