@@ -18,7 +18,7 @@ const withCustomPositionControls = createHigherOrderComponent((BlockEdit) => (pr
 	if (!POSITION_SUPPORT_BLOCKS.includes(props.name)) return <BlockEdit {...props} />;
 
 	const { attributes, setAttributes } = props;
-	const { cbePosition, cbeOffset, cbeZIndex, cbeWidth100 } = attributes;
+	const { cbePosition, cbeOffset, cbeZIndex, cbeWidth100, cbeEditorPositionOverride } = attributes;
 
 	return (
 		<Fragment>
@@ -30,6 +30,14 @@ const withCustomPositionControls = createHigherOrderComponent((BlockEdit) => (pr
 						checked={ attributes.cbeWidth100 }
 						onChange={ (value) => setAttributes({ cbeWidth100: value }) }
 					/>
+					<ToggleControl
+						label="Positon im Editor deaktivieren"
+						checked={ attributes.cbeEditorPositionOverride }
+						onChange={ (value) => setAttributes({ cbeEditorPositionOverride: value }) }
+					/>
+					<p className="components-base-control__help">
+						Deaktiviert die CSS-Positionierung nur im Editor. Nützlich für besseres Layout beim Bearbeiten.
+					</p>
 					<SelectControl
 						label="CSS-Position"
 						value={cbePosition}
@@ -78,6 +86,7 @@ function addCustomAttributes(settings, name) {
 			},
 			cbeZIndex: { type: 'string' },
 			cbeWidth100: { type: 'boolean', default: false },
+			cbeEditorPositionOverride: {type: 'boolean', default: false},
 		},
 		supports: {
 			...settings.supports,
@@ -151,6 +160,7 @@ addFilter(
 				props.wrapperProps?.className,
 				attributes.cbeWidth100 ? 'cbe-width-100' : null,
 				attributes.cbePosition ? `cbe-position-${attributes.cbePosition}` : null,
+				attributes.cbeEditorPositionOverride ? 'cbe-editor-position-override' : null,
 			].filter(Boolean).join(' ')
 		};
 
@@ -172,6 +182,10 @@ addFilter(
 
 		if (attributes.cbePosition) {
 			classNames.push(`cbe-position-${attributes.cbePosition}`);
+		}
+
+		if (attributes.cbeEditorPositionOverride) {
+			classNames.push('cbe-editor-position-override');
 		}
 
 		return {

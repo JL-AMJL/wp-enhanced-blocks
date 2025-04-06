@@ -19,18 +19,7 @@
 	width: auto !important;
 }
 
-/* 2. Simuliere Platzhalter nach dem fixierten Block */
-.block-editor-block-list__block.cbe-position-fixed.is-selected::after {
-	content: "";
-	display: block;
-	height: 100px; /* <-- Anpassen: entspricht Höhe des fixierten Blocks */
-	transition: height 0.3s ease;
-}
-
-/* 3. Wenn nicht ausgewählt: kein Platz */
-.block-editor-block-list__block.cbe-position-fixed:not(.is-selected)::after {
-	content: "";
-	display: block;
-	height: 0;
-	transition: height 0.3s ease;
+.block-editor-block-list__block.cbe-position-fixed.cbe-editor-position-override {
+	position: relative !important;
+	width: auto !important;
 }

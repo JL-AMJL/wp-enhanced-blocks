@@ -168,7 +168,8 @@ const withCustomPositionControls = (0,_wordpress_compose__WEBPACK_IMPORTED_MODUL
     cbePosition,
     cbeOffset,
     cbeZIndex,
-    cbeWidth100
+    cbeWidth100,
+    cbeEditorPositionOverride
   } = attributes;
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(BlockEdit, {
@@ -183,6 +184,15 @@ const withCustomPositionControls = (0,_wordpress_compose__WEBPACK_IMPORTED_MODUL
           onChange: value => setAttributes({
             cbeWidth100: value
           })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToggleControl, {
+          label: "Positon im Editor deaktivieren",
+          checked: attributes.cbeEditorPositionOverride,
+          onChange: value => setAttributes({
+            cbeEditorPositionOverride: value
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+          className: "components-base-control__help",
+          children: "Deaktiviert die CSS-Positionierung nur im Editor. N\xFCtzlich f\xFCr besseres Layout beim Bearbeiten."
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.SelectControl, {
           label: "CSS-Position",
           value: cbePosition,
@@ -248,6 +258,10 @@ function addCustomAttributes(settings, name) {
         type: 'string'
       },
       cbeWidth100: {
+        type: 'boolean',
+        default: false
+      },
+      cbeEditorPositionOverride: {
         type: 'boolean',
         default: false
       }
@@ -322,7 +336,7 @@ function applyCustomStyles(extraProps, blockType, attributes) {
       '--cbe-left': attributes.cbeOffset?.left || undefined,
       '--cbe-z-index': !isNaN(parseInt(attributes.cbeZIndex)) ? parseInt(attributes.cbeZIndex) : undefined
     },
-    className: [props.wrapperProps?.className, attributes.cbeWidth100 ? 'cbe-width-100' : null, attributes.cbePosition ? `cbe-position-${attributes.cbePosition}` : null].filter(Boolean).join(' ')
+    className: [props.wrapperProps?.className, attributes.cbeWidth100 ? 'cbe-width-100' : null, attributes.cbePosition ? `cbe-position-${attributes.cbePosition}` : null, attributes.cbeEditorPositionOverride ? 'cbe-editor-position-override' : null].filter(Boolean).join(' ')
   };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(BlockListBlock, {
     ...props,
@@ -337,6 +351,9 @@ function applyCustomStyles(extraProps, blockType, attributes) {
   }
   if (attributes.cbePosition) {
     classNames.push(`cbe-position-${attributes.cbePosition}`);
+  }
+  if (attributes.cbeEditorPositionOverride) {
+    classNames.push('cbe-editor-position-override');
   }
   return {
     ...attributes,
