@@ -156,13 +156,40 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const POSITION_SUPPORT_BLOCKS = ['core/group', 'core/cover', 'core/column'];
+
+// Function to dynamically set the width of fixed elements in the editor
+const updateFixedElementWidth = () => {
+  console.log('Running updateFixedElementWidth for .cbe-position-fixed');
+
+  // Re-query skeletonContent and all fixed elements dynamically
+  const skeletonContent = document.querySelector('.interface-interface-skeleton__content');
+  const fixedElements = document.querySelectorAll('.cbe-position-fixed'); // Target all elements with the cbe-position-fixed class
+
+  if (skeletonContent && fixedElements.length > 0) {
+    console.log('Found skeletonContent:', skeletonContent);
+    console.log('Found fixedElements:', fixedElements);
+
+    // Calculate and apply the new width for each fixed element
+    const newWidth = `${skeletonContent.offsetWidth}px`;
+    fixedElements.forEach(fixedElement => {
+      fixedElement.style.setProperty('width', newWidth, 'important'); // Apply with !important
+      console.log('Updated width of fixedElement to:', newWidth, fixedElement);
+    });
+  } else {
+    if (!skeletonContent) console.log('Skeleton content not found.');
+    if (fixedElements.length === 0) console.log('No elements with class .cbe-position-fixed found.');
+  }
+};
+
+// Higher-order component to add custom position controls
 const withCustomPositionControls = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_3__.createHigherOrderComponent)(BlockEdit => props => {
   if (!POSITION_SUPPORT_BLOCKS.includes(props.name)) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(BlockEdit, {
     ...props
   });
   const {
     attributes,
-    setAttributes
+    setAttributes,
+    clientId
   } = props;
   const {
     cbePosition,
@@ -171,6 +198,55 @@ const withCustomPositionControls = (0,_wordpress_compose__WEBPACK_IMPORTED_MODUL
     cbeWidth100,
     cbeEditorPositionOverride
   } = attributes;
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
+    console.log('useEffect triggered for .bg-slider');
+
+    // Only apply dynamic width in the editor
+    if (cbePosition === 'fixed' && cbeWidth100 && !cbeEditorPositionOverride) {
+      console.log('Conditions met for updating width.');
+      updateFixedElementWidth();
+
+      // Update the width on window resize
+      const handleResize = () => {
+        console.log('Window resized, updating width for .bg-slider');
+        updateFixedElementWidth();
+      };
+      window.addEventListener('resize', handleResize);
+
+      // Observe DOM changes to reapply width updates
+      const observer = new MutationObserver(mutationsList => {
+        console.log('DOM changed, reapplying width update.');
+        for (const mutation of mutationsList) {
+          if (mutation.type === 'childList' || mutation.type === 'attributes') {
+            console.log('Mutation detected:', mutation);
+            updateFixedElementWidth();
+          }
+        }
+      });
+
+      // Observe the parent container of the editor and secondary panel
+      const skeleton = document.querySelector('.interface-interface-skeleton');
+      if (skeleton) {
+        observer.observe(skeleton, {
+          childList: true,
+          subtree: true,
+          attributes: true
+        });
+        console.log('MutationObserver is now observing:', skeleton);
+      } else {
+        console.log('Skeleton container not found.');
+      }
+
+      // Cleanup event listeners and observer on unmount
+      return () => {
+        console.log('Cleaning up resize listener and MutationObserver for .bg-slider');
+        window.removeEventListener('resize', handleResize);
+        observer.disconnect();
+      };
+    } else {
+      console.log('Conditions not met for updating width.');
+    }
+  }, [cbePosition, cbeWidth100, cbeEditorPositionOverride]);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(BlockEdit, {
       ...props
