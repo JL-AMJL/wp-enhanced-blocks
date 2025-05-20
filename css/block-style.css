@@ -21,3 +21,50 @@
 	position: sticky !important;
 	top: 0;
 }
+
+/* Justify Content */
+.cbe-justify-content-flex-start { justify-content: flex-start; }
+.cbe-justify-content-center { justify-content: center; }
+.cbe-justify-content-flex-end { justify-content: flex-end; }
+.cbe-justify-content-space-between { justify-content: space-between; }
+.cbe-justify-content-stretch { justify-content: stretch; }
+
+/* Align Items */
+.cbe-align-items-flex-start { align-items: flex-start; }
+.cbe-align-items-center { align-items: center; }
+.cbe-align-items-flex-end { align-items: flex-end; }
+.cbe-align-items-stretch { align-items: stretch; }
+
+/* Align Content */
+.cbe-align-content-flex-start { align-content: flex-start; }
+.cbe-align-content-center { align-content: center; }
+.cbe-align-content-flex-end { align-content: flex-end; }
+.cbe-align-content-space-between { align-content: space-between; }
+.cbe-align-content-stretch { align-content: stretch; }
+
+/* Make Sure container is flex */
+.cbe-justify-content-flex-start,
+.cbe-justify-content-center,
+.cbe-justify-content-flex-end,
+.cbe-justify-content-space-between,
+.cbe-justify-content-stretch,
+.cbe-align-items-flex-start,
+.cbe-align-items-center,
+.cbe-align-items-flex-end,
+.cbe-align-items-stretch,
+.cbe-align-content-flex-start,
+.cbe-align-content-center,
+.cbe-align-content-flex-end,
+.cbe-align-content-space-between,
+.cbe-align-content-stretch {
+  display: flex;
+}
+
+/* Make sure container is set to wrap for align-content */
+.cbe-align-content-flex-start,
+.cbe-align-content-center,
+.cbe-align-content-flex-end,
+.cbe-align-content-space-between,
+.cbe-align-content-stretch {
+  flex-wrap: wrap; /* für align-content nötig */
+}

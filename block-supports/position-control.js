@@ -5,10 +5,24 @@ import {
   	TextControl,
 	ToggleControl,
 	__experimentalBoxControl as BoxControl,
+	__experimentalToggleGroupControl as ToggleGroupControl,
+	__experimentalToggleGroupControlOptionIcon as ToggleGroupControlOptionIcon
 } from '@wordpress/components';
 import { InspectorControls } from '@wordpress/block-editor';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { Fragment, useEffect } from '@wordpress/element';
+import {
+	justifyLeft,
+	justifyCenter,
+	justifyRight,
+	justifySpaceBetween,
+	justifyStretch,
+	justifyTop,
+	justifyCenterVertical,
+	justifyBottom,
+	justifySpaceBetweenVertical,
+	justifyStretchVertical,
+} from '@wordpress/icons';
 
 const POSITION_SUPPORT_BLOCKS = ['core/group', 'core/cover', 'core/column'];
 
@@ -41,7 +55,7 @@ const withCustomPositionControls = createHigherOrderComponent((BlockEdit) => (pr
 	if (!POSITION_SUPPORT_BLOCKS.includes(props.name)) return <BlockEdit {...props} />;
 
 	const { attributes, setAttributes, clientId} = props;
-	const { cbePosition, cbeOffset, cbeZIndex, cbeWidth100, cbeEditorPositionOverride } = attributes;
+	const { cbePosition, cbeOffset, cbeZIndex, cbeWidth100, cbeEditorPositionOverride, cbeJustifyContent, cbeAlignContent, cbeAlignItems } = attributes;
 
 	useEffect(() => {
 		console.log('useEffect triggered for .bg-slider');
@@ -97,6 +111,49 @@ const withCustomPositionControls = createHigherOrderComponent((BlockEdit) => (pr
 		<Fragment>
 			<BlockEdit {...props} />
 			<InspectorControls>
+				<PanelBody title="Advanced Layout" initialOpen>
+					<ToggleGroupControl
+						label="Justify Content"
+						value={cbeJustifyContent}
+						onChange={(value) =>
+							setAttributes({ cbeJustifyContent: value === cbeJustifyContent ? undefined : value })
+						}
+						isBlock
+					>
+						<ToggleGroupControlOptionIcon value="flex-start" icon={justifyLeft} />
+						<ToggleGroupControlOptionIcon value="center" icon={justifyCenter} />
+						<ToggleGroupControlOptionIcon value="flex-end" icon={justifyRight} />
+						<ToggleGroupControlOptionIcon value="space-between" icon={justifySpaceBetween} />
+						<ToggleGroupControlOptionIcon value="stretch" icon={justifyStretch} />
+					</ToggleGroupControl>
+					<ToggleGroupControl
+						label="Align Content"
+						value={cbeAlignContent}
+						onChange={(value) =>
+							setAttributes({ cbeAlignContent: value === cbeAlignContent ? undefined : value })
+						}
+						isBlock
+					>
+						<ToggleGroupControlOptionIcon value="flex-start" icon={justifyTop} />
+						<ToggleGroupControlOptionIcon value="center" icon={justifyCenterVertical} />
+						<ToggleGroupControlOptionIcon value="flex-end" icon={justifyBottom} />
+						<ToggleGroupControlOptionIcon value="space-between" icon={justifySpaceBetweenVertical} />
+						<ToggleGroupControlOptionIcon value="stretch" icon={justifyStretchVertical} />
+					</ToggleGroupControl>
+					<ToggleGroupControl
+						label="Align Items"
+						value={cbeAlignItems}
+						onChange={(value) =>
+							setAttributes({ cbeAlignItems: value === cbeAlignItems ? undefined : value })
+						}
+						isBlock
+					>
+						<ToggleGroupControlOptionIcon value="flex-start" icon={justifyTop} />
+						<ToggleGroupControlOptionIcon value="center" icon={justifyCenterVertical} />
+						<ToggleGroupControlOptionIcon value="flex-end" icon={justifyBottom} />
+						<ToggleGroupControlOptionIcon value="stretch" icon={justifyStretchVertical} />
+					</ToggleGroupControl>
+				</PanelBody>
 				<PanelBody title="Advanced Positioning" initialOpen={false}>
 					<ToggleControl
 						label="Breite auf 100% setzen"
@@ -160,6 +217,9 @@ function addCustomAttributes(settings, name) {
 			cbeZIndex: { type: 'string' },
 			cbeWidth100: { type: 'boolean', default: false },
 			cbeEditorPositionOverride: {type: 'boolean', default: false},
+			cbeJustifyContent: { type: 'string' , default: '' },
+			cbeAlignContent: { type: 'string' , default: '' },
+			cbeAlignItems: { type: 'string' , default: '' },
 		},
 		supports: {
 			...settings.supports,
@@ -172,19 +232,30 @@ addFilter('blocks.registerBlockType', 'cbe/add-custom-attributes', addCustomAttr
 function applyCustomClassNames(extraProps, blockType, attributes) {
 	if (!POSITION_SUPPORT_BLOCKS.includes(blockType.name)) return extraProps;
 
-	const classNames = [];
+	const cleaned = (extraProps.className || '').split(' ')
+	.filter(cls => !cls.startsWith('cbe-'));
 
 	if (attributes.cbeWidth100) {
-		classNames.push('cbe-width-100');
+		cleaned.push('cbe-width-100');
 	}
 
 	if (attributes.cbePosition) {
-		classNames.push(`cbe-position-${attributes.cbePosition}`);
+		cleaned.push(`cbe-position-${attributes.cbePosition}`);
 	}
 
-	if (classNames.length > 0) {
-		extraProps.className = [extraProps.className || '', ...classNames].filter(Boolean).join(' ');
+	if (attributes.cbeJustifyContent) {
+		cleaned.push(`cbe-justify-content-${attributes.cbeJustifyContent}`);
 	}
+
+	if (attributes.cbeAlignContent) {
+		cleaned.push(`cbe-align-content-${attributes.cbeAlignContent}`);
+	}
+
+	if (attributes.cbeAlignItems) {
+		cleaned.push(`cbe-align-items-${attributes.cbeAlignItems}`);
+	}
+
+	extraProps.className = cleaned.join(' ');
 
 	return extraProps;
 }
@@ -193,7 +264,7 @@ addFilter('blocks.getSaveContent.extraProps', 'cbe/apply-classnames', applyCusto
 function applyCustomStyles(extraProps, blockType, attributes) {
 	if (!POSITION_SUPPORT_BLOCKS.includes(blockType.name)) return extraProps;
 
-	const { cbePosition, cbeOffset, cbeZIndex	} = attributes;
+	const { cbeOffset, cbeZIndex } = attributes;
 
 	extraProps.style = {
 		...extraProps.style,
@@ -218,6 +289,24 @@ addFilter(
 
 		const { attributes } = props;
 
+		const cleanedClassNames = (props.wrapperProps?.className || '').split(' ').filter(cls => !cls.startsWith('cbe-'));
+
+		if (attributes.cbeWidth100) {
+			cleanedClassNames.push('cbe-width-100');
+		}
+		if (attributes.cbePosition) {
+			cleanedClassNames.push(`cbe-position-${attributes.cbePosition}`);
+		}
+		if (attributes.cbeJustifyContent) {
+			cleanedClassNames.push(`cbe-justify-content-${attributes.cbeJustifyContent}`);
+		}
+		if (attributes.cbeAlignItems) {
+			cleanedClassNames.push(`cbe-align-items-${attributes.cbeAlignItems}`);
+		}
+		if (attributes.cbeAlignContent) {
+			cleanedClassNames.push(`cbe-align-content-${attributes.cbeAlignContent}`);
+		}
+
 		const wrapperProps = {
 			...props.wrapperProps,
 			style: {
@@ -229,12 +318,7 @@ addFilter(
 				'--cbe-left': attributes.cbeOffset?.left || undefined,
 				'--cbe-z-index': !isNaN(parseInt(attributes.cbeZIndex)) ? parseInt(attributes.cbeZIndex) : undefined,
 			},
-			className: [
-				props.wrapperProps?.className,
-				attributes.cbeWidth100 ? 'cbe-width-100' : null,
-				attributes.cbePosition ? `cbe-position-${attributes.cbePosition}` : null,
-				attributes.cbeEditorPositionOverride ? 'cbe-editor-position-override' : null,
-			].filter(Boolean).join(' ')
+			className: cleanedClassNames.join(' ')
 		};
 
 		return <BlockListBlock {...props} wrapperProps={wrapperProps} />;
@@ -259,6 +343,18 @@ addFilter(
 
 		if (attributes.cbeEditorPositionOverride) {
 			classNames.push('cbe-editor-position-override');
+		}
+
+		if (attributes.cbeJustifyContent) {
+			classNames.push(`cbe-justify-content-${attributes.cbeJustifyContent}`);
+		}
+
+		if (attributes.cbeAlignContent) {
+			classNames.push(`cbe-align-content-${attributes.cbeAlignContent}`);
+		}
+
+		if (attributes.cbeAlignItems) {
+			classNames.push(`cbe-align-items-${attributes.cbeAlignItems}`);
 		}
 
 		return {
