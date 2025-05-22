@@ -823,22 +823,6 @@ function applyCustomStyles(extraProps, blockType, attributes) {
   const {
     attributes
   } = props;
-  const cleanedClassNames = (props.wrapperProps?.className || '').split(' ').filter(cls => !cls.startsWith('cbe-'));
-  if (attributes.cbeWidth100) {
-    cleanedClassNames.push('cbe-width-100');
-  }
-  if (attributes.cbePosition) {
-    cleanedClassNames.push(`cbe-position-${attributes.cbePosition}`);
-  }
-  if (attributes.cbeJustifyContent) {
-    cleanedClassNames.push(`cbe-justify-content-${attributes.cbeJustifyContent}`);
-  }
-  if (attributes.cbeAlignItems) {
-    cleanedClassNames.push(`cbe-align-items-${attributes.cbeAlignItems}`);
-  }
-  if (attributes.cbeAlignContent) {
-    cleanedClassNames.push(`cbe-align-content-${attributes.cbeAlignContent}`);
-  }
   const wrapperProps = {
     ...props.wrapperProps,
     style: {
@@ -848,9 +832,13 @@ function applyCustomStyles(extraProps, blockType, attributes) {
       '--cbe-right': attributes.cbeOffset?.right || undefined,
       '--cbe-bottom': attributes.cbeOffset?.bottom || undefined,
       '--cbe-left': attributes.cbeOffset?.left || undefined,
-      '--cbe-z-index': !isNaN(parseInt(attributes.cbeZIndex)) ? parseInt(attributes.cbeZIndex) : undefined
+      '--cbe-z-index': !isNaN(parseInt(attributes.cbeZIndex)) ? parseInt(attributes.cbeZIndex) : undefined,
+      // Layout Styles
+      justifyContent: attributes.cbeJustifyContent || undefined,
+      alignContent: attributes.cbeAlignContent || undefined,
+      alignItems: attributes.cbeAlignItems || undefined
     },
-    className: cleanedClassNames.join(' ')
+    className: [props.wrapperProps?.className, attributes.cbeWidth100 ? 'cbe-width-100' : null, attributes.cbePosition ? `cbe-position-${attributes.cbePosition}` : null, attributes.cbeEditorPositionOverride ? 'cbe-editor-position-override' : null].filter(Boolean).join(' ')
   };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(BlockListBlock, {
     ...props,
@@ -868,15 +856,6 @@ function applyCustomStyles(extraProps, blockType, attributes) {
   }
   if (attributes.cbeEditorPositionOverride) {
     classNames.push('cbe-editor-position-override');
-  }
-  if (attributes.cbeJustifyContent) {
-    classNames.push(`cbe-justify-content-${attributes.cbeJustifyContent}`);
-  }
-  if (attributes.cbeAlignContent) {
-    classNames.push(`cbe-align-content-${attributes.cbeAlignContent}`);
-  }
-  if (attributes.cbeAlignItems) {
-    classNames.push(`cbe-align-items-${attributes.cbeAlignItems}`);
   }
   return {
     ...attributes,
